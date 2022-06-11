@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -10,6 +11,7 @@
       }
     </style>
   </head>
+
   <body>
     <script type="text/javascript">
       var config = {
@@ -41,19 +43,42 @@
           frameWidth: 32,
           frameHeight: 48,
         });
+        this.load.image("asteroid", "assets/ast.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
       }
-
+       
       function create() {
         starfield = this.add.tileSprite(0, 0, 2000, 1200, 'starfield');
         player = this.physics.add.sprite(400, 500, "player");
         cursors = this.input.keyboard.createCursorKeys();
+        this.physics.world.setBounds(0, 300, 800, 300);
         player.setCollideWorldBounds(true);
+
+        var asteroids = this.add.group([
+          { key: 'asteroid', frame: 0, repeat: 10, setXY: { x: 32, y: 120, stepX: 52 } },
+          { key: 'asteroid', frame: 0, repeat: 10, setXY: { x: 32, y: 120 + 48, stepX: 52 } },
+          { key: 'asteroid', frame: 0, repeat: 10, setXY: { x: 32, y: 120 + 2*48, stepX: 52 } },
+          { key: 'asteroid', frame: 0, repeat: 10, setXY: { x: 32, y: 120 + 3*48, stepX: 52 } }
+        ]);
+      
+        asteroids.getChildren().forEach(function(asteroid) {
+          this.tweens.add({
+            targets: asteroid,
+            ease: "Linear",
+            duration: 2000,
+            x: "+=200",
+            paused: false,
+            delay: 0,
+            yoyo: true,
+            repeat: -1
+          })
+        }, this);   
       }
 
       function update() {
-
-        starfield.tilePositionY += 2;
-        
+        starfield.tilePositionY -= 2;
         if (cursors.left.isDown) {
           player.setVelocityX(-160);
         } 
@@ -62,14 +87,15 @@
         }
         else if (cursors.up.isDown) {
           player.setVelocityY(-160);
-        } else if (cursors.down.isDown) {
+        } 
+        else if (cursors.down.isDown) {
           player.setVelocityY(+160);
-        } else {
+        } 
+        else {
           player.setVelocityY(0);
           player.setVelocityX(0);
         }
       }
-
     </script>
   </body>
 </html>
