@@ -16,8 +16,8 @@
     <script type="text/javascript">
       var config = {
         type: Phaser.AUTO,
-        width: 800,
-        height: 600,
+        width: 1300,
+        height: 700,
         physics: {
           default: "arcade",
           arcade: {
@@ -34,11 +34,18 @@
 
       var player;
       var cursors;
+      var asteroids;
+      var planet1;
+      var planet2;
+      var lives = 5;
+      var livesText;
+      var numOfPlanets = 1;
+      var gameOver = false;
 
       var game = new Phaser.Game(config);
 
       function preload() {
-        this.load.image('starfield', 'assets/starfield.png');
+        this.load.image("starfield", "assets/starfield.png");
         this.load.image("player", "assets/player.png", {
           frameWidth: 32,
           frameHeight: 48,
@@ -47,23 +54,57 @@
           frameWidth: 32,
           frameHeight: 48,
         });
+        this.load.image("planet1", "assets/planet_1.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+        this.load.image("planet2", "assets/planet_2.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
       }
-       
+
       function create() {
-        starfield = this.add.tileSprite(0, 0, 2000, 1200, 'starfield');
+        starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
         player = this.physics.add.sprite(400, 500, "player");
+        planet1 = this.physics.add.sprite(30, 30, "planet1");
+        planet2 = this.physics.add.sprite(700, 15, "planet2");
+        livesText = this.add.text(16, 16, "Lives left: " + lives, {
+          fontSize: "32px",
+          fill: "#fff",
+        });
         cursors = this.input.keyboard.createCursorKeys();
-        this.physics.world.setBounds(0, 300, 800, 300);
+
         player.setCollideWorldBounds(true);
 
-        var asteroids = this.add.group([
-          { key: 'asteroid', frame: 0, repeat: 10, setXY: { x: 32, y: 120, stepX: 52 } },
-          { key: 'asteroid', frame: 0, repeat: 10, setXY: { x: 32, y: 120 + 48, stepX: 52 } },
-          { key: 'asteroid', frame: 0, repeat: 10, setXY: { x: 32, y: 120 + 2*48, stepX: 52 } },
-          { key: 'asteroid', frame: 0, repeat: 10, setXY: { x: 32, y: 120 + 3*48, stepX: 52 } }
+        asteroids = this.add.group([
+          {
+            key: "asteroid",
+            frame: 0,
+            repeat: 10,
+            setXY: { x: 32, y: 120, stepX: 52 },
+          },
+          {
+            key: "asteroid",
+            frame: 0,
+            repeat: 10,
+            setXY: { x: 32, y: 120 + 48, stepX: 52 },
+          },
+          {
+            key: "asteroid",
+            frame: 0,
+            repeat: 10,
+            setXY: { x: 32, y: 120 + 2 * 48, stepX: 52 },
+          },
+          {
+            key: "asteroid",
+            frame: 0,
+            repeat: 10,
+            setXY: { x: 32, y: 120 + 3 * 48, stepX: 52 },
+          },
         ]);
-      
-        asteroids.getChildren().forEach(function(asteroid) {
+
+        asteroids.getChildren().forEach(function (asteroid) {
           this.tweens.add({
             targets: asteroid,
             ease: "Linear",
@@ -72,28 +113,115 @@
             paused: false,
             delay: 0,
             yoyo: true,
-            repeat: -1
-          })
-        }, this);   
+            repeat: -1,
+          });
+        }, this);
+
+        planet1.setScale(3);
+        planet1.setBounce(1);
+        //planet1.setCircle(true);
+
+        planet2.setScale(5);
+        planet2.setBounce(1);
+        //planet2.setCircle(true);
+
+        planet1.setCollideWorldBounds(true);
+        planet2.setCollideWorldBounds(true);
+
+        //planet1.disableBody(true, true);
+        //planet2.disableBody(true, true);
+
+        this.physics.add.overlap(player, planet1, playerHitPlanet, null, this);
+        this.physics.add.overlap(player, planet2, playerHitPlanet, null, this);
+
+        nextLevel();
       }
 
       function update() {
+        if (gameOver) {
+          livesText.setText(
+            "Lives left: " +
+              lives +
+              ". Thankyou for playing :) Your score is: <insert advaiths job>"
+          );
+          this.scene.pause();
+          return;
+        }
+
         starfield.tilePositionY -= 2;
         if (cursors.left.isDown) {
           player.setVelocityX(-160);
-        } 
-        else if (cursors.right.isDown) {
+        } else if (cursors.right.isDown) {
           player.setVelocityX(160);
-        }
-        else if (cursors.up.isDown) {
+        } else if (cursors.up.isDown) {
           player.setVelocityY(-160);
-        } 
-        else if (cursors.down.isDown) {
+        } else if (cursors.down.isDown) {
           player.setVelocityY(+160);
-        } 
-        else {
+        } else {
           player.setVelocityY(0);
           player.setVelocityX(0);
+        }
+      }
+
+      function playerHitPlanet(ply, planet) {
+        player.disableBody(true, true);
+
+        lives -= 1;
+        livesText.setText("Lives left: " + lives);
+        numOfPlanets += 1;
+
+        if (lives <= 0) {
+          gameOver = true;
+        }
+
+        this.time.delayedCall(3000, nextLevel, [], this);
+        this.time.delayedCall(3000, respawnPlayer, [], this);
+        //ply.enable = true;
+
+        // we should make it such that the extra planets are created in the nextLevel() section and not in the loading section.
+        // only problem now is making main character disappear and come back.
+      }
+
+      function respawnPlayer() {
+        player.enableBody(true, 400, 500, true, true);
+      }
+
+      function nextLevel() {
+        if (numOfPlanets >= 1) {
+          planet1.x = 30;
+          planet1.y = 30;
+          var velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet1.setVelocityX(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -300,
+              velocityCoin > 0.5 ? 300 : -100
+            )
+          );
+          velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet1.setVelocityY(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -300,
+              velocityCoin > 0.5 ? 300 : -100
+            )
+          );
+        }
+        if (numOfPlanets >= 2) {
+          planet2.x = 700;
+          planet2.y = 15;
+          var velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet2.setVelocityX(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -300,
+              velocityCoin > 0.5 ? 300 : -100
+            )
+          );
+          velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet2.setVelocityY(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -300,
+              velocityCoin > 0.5 ? 300 : -100
+            )
+          );
         }
       }
     </script>
