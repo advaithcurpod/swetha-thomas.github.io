@@ -37,6 +37,7 @@
       var asteroids;
       var planet1;
       var planet2;
+      var explosion;
       var lives = 5;
       var livesText;
       var numOfPlanets = 1;
@@ -62,6 +63,10 @@
         this.load.image("planet2", "assets/planet_2.png", {
           frameWidth: 32,
           frameHeight: 48,
+        });
+        this.load.spritesheet("explode", "assets/explode.png", {
+            frameWidth: 128,
+            frameHeight: 128,
         });
       }
 
@@ -116,6 +121,21 @@
         //planet1.disableBody(true, true);
         //planet2.disableBody(true, true);
 
+        explosions = this.physics.add.group({
+            max:0
+        });
+
+        this.anims.create({
+            key: 'explode',
+            frames: this.anims.generateFrameNumbers('explode', {
+                start: 0,
+                end: 15
+            }),
+            frameRate: 24,
+            repeat: 0,
+            hideOnComplete: true
+        })
+
         this.physics.add.overlap(player, planet1, playerHitPlanet, null, this);
         this.physics.add.overlap(player, planet2, playerHitPlanet, null, this);
 
@@ -149,9 +169,17 @@
         }
       }
 
+      class Explosion extends Phaser.Physics.Arcade.Sprite{
+          constructor(scene,x,y, texture){
+          super(scene,x,y,texture = 'explode');
+          scene.add.existing(this);
+          this.play('explode');
+          }
+      }
+          
       function playerHitPlanet(ply, planet) {
-        player.disableBody(true, true);
-
+        explosion = new Explosion(this, player.x, player.y)
+        player.disableBody(false, true);
         lives -= 1;
         livesText.setText("Lives left: " + lives);
         numOfPlanets += 1;
@@ -160,8 +188,8 @@
           gameOver = true;
         }
 
-        this.time.delayedCall(3000, nextLevel, [], this);
-        this.time.delayedCall(3000, respawnPlayer, [], this);
+        this.time.delayedCall(1000, nextLevel, [], this);
+        this.time.delayedCall(1000, respawnPlayer, [], this);
         //ply.enable = true;
 
         // we should make it such that the extra planets are created in the nextLevel() section and not in the loading section.
