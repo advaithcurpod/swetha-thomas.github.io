@@ -41,7 +41,6 @@
         var player;
         var cursors;
         var asteroids;
-        var asteroid;
         var planet1;
         var planet2;
         var bullet;
@@ -52,6 +51,7 @@
         var livesText;
         var numOfPlanets = 1;
         var gameOver = false;
+        var bulletTime = 0;
 
         var game = new Phaser.Game(config);
 
@@ -113,11 +113,9 @@
 
             cursors = this.input.keyboard.createCursorKeys();
 
-            var asteroids = this.physics.add.group({
+            asteroids = this.physics.add.group({
                 maxSize: 30
             });
-
-            var asteroid = this.physics.add.sprite(0, 0, 'asteroid');
 
             // might have to change 30 to 29
             for (let y = 0; y < 30; y++) {
@@ -161,9 +159,6 @@
                 hideOnComplete: true
             })
 
-            this.physics.add.overlap(player, planet1, playerHitPlanet, null, this);
-            this.physics.add.overlap(player, planet2, playerHitPlanet, null, this);
-            this.physics.add.overlap(bullet, asteroid, bulletHitAsteroid, null, this);
 
             nextLevel();
         }
@@ -191,14 +186,22 @@
                 player.setVelocityY(+180);
             } else if (cursors.space.isDown) {
                 // fire the bullet
-                bullet = this.physics.add.sprite(player.x, player.y, "bullet");
-                // bullet.setPosition(player.x,player.y);
-                bullet.setVelocityY(+200);
+                if (this.time.now > bulletTime) {
+                    bullet = this.physics.add.sprite(player.x, player.y+8, "bullet");
+                    bullet.setVelocityY(-500);
+                    bulletTime = this.time.now + 200;
+
+                }
             } else {
                 player.setVelocityY(0);
                 player.setVelocityX(0);
             }
+            this.physics.add.overlap(player, planet1, playerHitPlanet, null, this);
+            this.physics.add.overlap(player, planet2, playerHitPlanet, null, this);
+            //this.physics.add.overlap(bullet, asteroids, bulletHitAsteroid, null, this);
         }
+
+
 
         const bulletHitAsteroid = (bullet, asteroid) => {
             // explosion = new Explosion(this, bullet.x, bullet.y)
