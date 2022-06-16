@@ -55,6 +55,8 @@
       var numOfPlanets = 0;
       var gameOver = false;
       var bulletTime = 0;
+      var gameovertext1;
+      var gameovertext2;
 
       var game = new Phaser.Game(config);
 
@@ -174,12 +176,14 @@
         }
 
         if (gameOver) {
-          livesText.setText(
-            "Lives left: " +
-              lives +
-              ". Thankyou for playing :) Your score is: " +
-              points
-          );
+          gameovertext1 = this.add.text(100, 190, "Game Over!" , {
+          fontSize: "200px",
+          fill: "#fff",
+        });
+        gameovertext2 = this.add.text(120, 460, "Final Score = " + points + "  Lives Left = " + lives, {
+          fontSize: "50px",
+          fill: "#fff",
+        });
           this.scene.pause();
           return;
         }
