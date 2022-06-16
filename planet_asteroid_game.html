@@ -43,10 +43,11 @@
         var asteroids;
         var planet1;
         var planet2;
-        var bullet;
+        var bullets;
         var explosion;
         var lives = 5;
         var points = 0;
+        var maxpoints=150;
         var pointsText;
         var livesText;
         var numOfPlanets = 1;
@@ -88,6 +89,7 @@
             starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
             boundary = this.physics.add.sprite(0, 450, "boundary").setScale(2.23).setImmovable(true)
             player = this.physics.add.sprite(400, 500, "player");
+            player.setScale(1.2);
             player.setCollideWorldBounds(true);
 
             const collisionHandler = (boundary, obj) => {
@@ -95,7 +97,7 @@
             }
 
             this.physics.add.collider(boundary, player, collisionHandler);
-            // this.physics.add.collider(bullet, asteroids);
+            
             planet1 = this.physics.add.sprite(30, 30, "planet1");
             planet2 = this.physics.add.sprite(700, 15, "planet2");
 
@@ -103,8 +105,6 @@
                 fontSize: "32px",
                 fill: "#fff",
             });
-
-
 
             pointsText = this.add.text(16, 50, "Points: " + points, {
                 fontSize: "32px",
@@ -114,14 +114,20 @@
             cursors = this.input.keyboard.createCursorKeys();
 
             asteroids = this.physics.add.group({
-                maxSize: 30
+                maxSize: 30,
+                runChildUpdate:true
             });
 
             // might have to change 30 to 29
             for (let y = 0; y < 30; y++) {
-                asteroids.create(Phaser.Math.Between(0, 1300), Phaser.Math.Between(0, 350), 'asteroid')
+                asteroids.create(Phaser.Math.Between(0, 1300), Phaser.Math.Between(0, 350), 'asteroid');
             }
 
+            bullets = this.physics.add.group({
+                maxSize: 30,
+                runChildUpdate:true
+            });
+            
             asteroids.getChildren().forEach(function(asteroid) {
                 this.physics.add.collider(boundary, asteroid, collisionHandler);
                 asteroid.setCollideWorldBounds(true);
@@ -130,7 +136,7 @@
                 asteroid.setVelocityY(Phaser.Math.Between(-100, 100));
             }, this);
 
-            planet1.setScale(3);
+            planet1.setScale(4);
             planet1.setBounce(1);
             //planet1.setCircle(true);
 
@@ -159,7 +165,6 @@
                 hideOnComplete: true
             })
 
-
             nextLevel();
         }
 
@@ -187,7 +192,7 @@
             } else if (cursors.space.isDown) {
                 // fire the bullet
                 if (this.time.now > bulletTime) {
-                    bullet = this.physics.add.sprite(player.x, player.y+8, "bullet");
+                    bullet = bullets.getFirst(false,true,player.x,player.y+8,'bullet');
                     bullet.setVelocityY(-500);
                     bulletTime = this.time.now + 200;
 
@@ -198,20 +203,26 @@
             }
             this.physics.add.overlap(player, planet1, playerHitPlanet, null, this);
             this.physics.add.overlap(player, planet2, playerHitPlanet, null, this);
-            //this.physics.add.overlap(bullet, asteroids, bulletHitAsteroid, null, this);
+            this.physics.add.overlap(bullets, asteroids, bulletHitAsteroid, null, this);
         }
 
-
-
-        const bulletHitAsteroid = (bullet, asteroid) => {
-            // explosion = new Explosion(this, bullet.x, bullet.y)
-            asteroid.disableBody(true, true);
+        function bulletHitAsteroid (bullet, asteroid) {
+            explosion = new Explosion(this, asteroid.x, asteroid.y);
+            explosion.setScale(0.5);
+            explosion.explode();
+            bullet.destroy();
+            asteroid.destroy();
             points = points + 5;
             pointsText.setText("Points: " + points);
+            console.log(asteroids.countActive)
+            if (points==maxpoints){
+            gameOver=true;
+            }
         }
 
         function playerHitPlanet(ply, planet) {
-            explosion = new Explosion(this, player.x, player.y)
+            explosion = new Explosion(this, player.x, player.y);
+            explosion.explode();
             player.disableBody(false, true);
             lives -= 1;
             livesText.setText("Lives left: " + lives);
@@ -273,9 +284,11 @@
         }
 
         class Explosion extends Phaser.Physics.Arcade.Sprite {
-            constructor(scene, x, y, texture) {
-                super(scene, x, y, texture = 'explode');
+            constructor(scene, x, y) {
+                super(scene, x, y);
                 scene.add.existing(this);
+            }
+            explode(){
                 this.play('explode');
             }
         }
