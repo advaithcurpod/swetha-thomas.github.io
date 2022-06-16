@@ -38,8 +38,8 @@
 
       var player;
       var cursors;
-      var asteroids;
       var boundary;
+      var asteroids;
       var planet1;
       var planet2;
       var planet3;
@@ -60,11 +60,7 @@
 
       function preload() {
         this.load.image("starfield", "assets/starfield.png");
-        this.load.image("boundary", "assets/boundary.png");
-        this.load.image(
-          "transparent_boundary",
-          "assets/transparent_boundary_resized.png"
-        );
+        this.load.image("boundary","assets/boundary.png");
         this.load.image("player", "assets/player.png", {
           frameWidth: 32,
           frameHeight: 48,
@@ -106,7 +102,7 @@
       function create() {
         starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
         boundary = this.physics.add
-          .sprite(0, 450, "transparent_boundary")
+          .sprite(0, 450, "boundary")
           .setScale(2.23)
           .setImmovable(true);
         player = this.physics.add.sprite(400, 500, "player");
@@ -114,10 +110,8 @@
         player.setCollideWorldBounds(true);
 
         const collisionHandler = (boundary, obj) => {
-          obj.setBounce(1);
-        };
-
-        //this.physics.add.collider(boundary, player, collisionHandler);
+                obj.setBounce(1)
+            }
 
         livesText = this.add.text(16, 16, "Lives left: " + lives, {
           fontSize: "32px",
@@ -136,7 +130,6 @@
           runChildUpdate: true,
         });
 
-        // might have to change 30 to 29
         for (let y = 0; y < 30; y++) {
           asteroids.create(
             Phaser.Math.Between(0, 1300),
@@ -151,8 +144,8 @@
         });
 
         asteroids.getChildren().forEach(function (asteroid) {
-          this.physics.add.collider(boundary, asteroid, collisionHandler);
           asteroid.setCollideWorldBounds(true);
+          this.physics.add.collider(boundary, asteroid, collisionHandler);
           asteroid.setBounce(1);
           asteroid.setVelocityX(Phaser.Math.Between(-100, 100));
           asteroid.setVelocityY(Phaser.Math.Between(-100, 100));
@@ -202,7 +195,6 @@
         } else if (cursors.down.isDown) {
           player.setVelocityY(+180);
         } else if (cursors.space.isDown) {
-          // fire the bullet
           if (this.time.now > bulletTime) {
             bullet = bullets.getFirst(
               false,
@@ -260,10 +252,6 @@
 
         this.time.delayedCall(1000, nextLevel, [], this);
         this.time.delayedCall(1000, respawnPlayer, [], this);
-        //ply.enable = true;
-
-        // we should make it such that the extra planets are created in the nextLevel() section and not in the loading section.
-        // only problem now is making main character disappear and come back.
       }
 
       function respawnPlayer() {
@@ -274,7 +262,7 @@
       function nextLevel() {
         if (numOfPlanets == 1) {
           planet1 = this.physics.add.sprite(30, 30, "planet1");
-          planet1.setScale(4);
+          planet1.setScale(0.25);
           planet1.setBounce(1);
           planet1.setCollideWorldBounds(true);
           planet1.x = 30;
@@ -296,7 +284,7 @@
         }
         if (numOfPlanets == 2) {
           planet2 = this.physics.add.sprite(700, 15, "planet2");
-          planet2.setScale(4);
+          planet2.setScale(0.55);
           planet2.setBounce(1);
           planet2.setCollideWorldBounds(true);
           planet2.x = 700;
@@ -318,7 +306,7 @@
         }
         if (numOfPlanets == 3) {
           planet3 = this.physics.add.sprite(1000, 15, "planet3");
-          planet3.setScale(0.4);
+          planet3.setScale(0.3);
           planet3.setBounce(1);
           planet3.setCollideWorldBounds(true);
           planet3.x = 1000;
@@ -340,7 +328,7 @@
         }
         if (numOfPlanets == 4) {
           planet4 = this.physics.add.sprite(1300, 15, "planet4");
-          planet4.setScale(0.3);
+          planet4.setScale(0.25);
           planet4.setBounce(1);
           planet4.setCollideWorldBounds(true);
           planet4.x = 1300;
@@ -362,7 +350,7 @@
         }
         if (numOfPlanets == 5) {
           planet5 = this.physics.add.sprite(350, 15, "planet5");
-          planet5.setScale(0.55);
+          planet5.setScale(0.3);
           planet5.setBounce(1);
           planet5.setCollideWorldBounds(true);
           planet5.x = 350;
