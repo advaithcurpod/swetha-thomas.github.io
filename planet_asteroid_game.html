@@ -1,298 +1,398 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-
+  <head>
     <title>Document</title>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Galactic Wide Web</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
     <style type="text/css">
-        body {
-            margin: 0;
-        }
+      body {
+        margin: 0;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <script type="text/javascript">
-        var config = {
-            type: Phaser.AUTO,
-            width: 1300,
-            height: 700,
-            physics: {
-                default: "arcade",
-                arcade: {
-                    gravity: {
-                        y: 0
-                    },
-                    debug: false,
-                },
+      var config = {
+        type: Phaser.AUTO,
+        width: 1300,
+        height: 700,
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: {
+              y: 0,
             },
-            scene: {
-                preload: preload,
-                create: create,
-                update: update,
-            },
+            debug: false,
+          },
+        },
+        scene: {
+          preload: preload,
+          create: create,
+          update: update,
+        },
+      };
+
+      var player;
+      var cursors;
+      var asteroids;
+      var boundary;
+      var planet1;
+      var planet2;
+      var planet3;
+      var planet4;
+      var planet5;
+      var bullets;
+      var explosion;
+      var lives = 5;
+      var points = 0;
+      var maxpoints = 150;
+      var pointsText;
+      var livesText;
+      var numOfPlanets = 0;
+      var gameOver = false;
+      var bulletTime = 0;
+
+      var game = new Phaser.Game(config);
+
+      function preload() {
+        this.load.image("starfield", "assets/starfield.png");
+        this.load.image("boundary", "assets/boundary.png");
+        this.load.image(
+          "transparent_boundary",
+          "assets/transparent_boundary_resized.png"
+        );
+        this.load.image("player", "assets/player.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+        this.load.image("asteroid", "assets/asteroid.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+        this.load.image("planet1", "assets/planet_1.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+        this.load.image("planet2", "assets/planet_2.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+        this.load.image("planet3", "assets/planet_3.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+        this.load.image("planet4", "assets/planet_4.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+        this.load.image("planet5", "assets/planet_5.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+        this.load.spritesheet("explode", "assets/explode.png", {
+          frameWidth: 128,
+          frameHeight: 128,
+        });
+        this.load.image("bullet", "assets/bullet.png", {
+          frameWidth: 32,
+          frameHeight: 48,
+        });
+      }
+
+      function create() {
+        starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
+        boundary = this.physics.add
+          .sprite(0, 450, "transparent_boundary")
+          .setScale(2.23)
+          .setImmovable(true);
+        player = this.physics.add.sprite(400, 500, "player");
+        player.setScale(1.2);
+        player.setCollideWorldBounds(true);
+
+        const collisionHandler = (boundary, obj) => {
+          obj.setBounce(1);
         };
 
-        var player;
-        var cursors;
-        var asteroids;
-        var planet1;
-        var planet2;
-        var bullets;
-        var explosion;
-        var lives = 5;
-        var points = 0;
-        var maxpoints=150;
-        var pointsText;
-        var livesText;
-        var numOfPlanets = 1;
-        var gameOver = false;
-        var bulletTime = 0;
+        //this.physics.add.collider(boundary, player, collisionHandler);
 
-        var game = new Phaser.Game(config);
+        livesText = this.add.text(16, 16, "Lives left: " + lives, {
+          fontSize: "32px",
+          fill: "#fff",
+        });
 
-        function preload() {
-            this.load.image("starfield", "assets/starfield.png");
-            this.load.image("boundary", "assets/boundary.png");
-            this.load.image("player", "assets/player.png", {
-                frameWidth: 32,
-                frameHeight: 48,
-            });
-            this.load.image("asteroid", "assets/asteroid.png", {
-                frameWidth: 32,
-                frameHeight: 48,
-            });
-            this.load.image("planet1", "assets/planet_1.png", {
-                frameWidth: 32,
-                frameHeight: 48,
-            });
-            this.load.image("planet2", "assets/planet_2.png", {
-                frameWidth: 32,
-                frameHeight: 48,
-            });
-            this.load.spritesheet("explode", "assets/explode.png", {
-                frameWidth: 128,
-                frameHeight: 128,
-            });
-            this.load.image("bullet", "assets/bullet.png", {
-                frameWidth: 32,
-                frameHeight: 48,
-            });
+        pointsText = this.add.text(16, 50, "Points: " + points, {
+          fontSize: "32px",
+          fill: "#fff",
+        });
+
+        cursors = this.input.keyboard.createCursorKeys();
+
+        asteroids = this.physics.add.group({
+          maxSize: 30,
+          runChildUpdate: true,
+        });
+
+        // might have to change 30 to 29
+        for (let y = 0; y < 30; y++) {
+          asteroids.create(
+            Phaser.Math.Between(0, 1300),
+            Phaser.Math.Between(0, 350),
+            "asteroid"
+          );
         }
 
-        function create() {
-            starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
-            boundary = this.physics.add.sprite(0, 450, "boundary").setScale(2.23).setImmovable(true)
-            player = this.physics.add.sprite(400, 500, "player");
-            player.setScale(1.2);
-            player.setCollideWorldBounds(true);
+        bullets = this.physics.add.group({
+          maxSize: 30,
+          runChildUpdate: true,
+        });
 
-            const collisionHandler = (boundary, obj) => {
-                obj.setBounce(1)
-            }
+        asteroids.getChildren().forEach(function (asteroid) {
+          this.physics.add.collider(boundary, asteroid, collisionHandler);
+          asteroid.setCollideWorldBounds(true);
+          asteroid.setBounce(1);
+          asteroid.setVelocityX(Phaser.Math.Between(-100, 100));
+          asteroid.setVelocityY(Phaser.Math.Between(-100, 100));
+        }, this);
 
-            this.physics.add.collider(boundary, player, collisionHandler);
-            
-            planet1 = this.physics.add.sprite(30, 30, "planet1");
-            planet2 = this.physics.add.sprite(700, 15, "planet2");
+        explosions = this.physics.add.group({
+          max: 0,
+        });
 
-            livesText = this.add.text(16, 16, "Lives left: " + lives, {
-                fontSize: "32px",
-                fill: "#fff",
-            });
+        this.anims.create({
+          key: "explode",
+          frames: this.anims.generateFrameNumbers("explode", {
+            start: 0,
+            end: 15,
+          }),
+          frameRate: 24,
+          repeat: 0,
+          hideOnComplete: true,
+        });
+      }
 
-            pointsText = this.add.text(16, 50, "Points: " + points, {
-                fontSize: "32px",
-                fill: "#fff",
-            });
-
-            cursors = this.input.keyboard.createCursorKeys();
-
-            asteroids = this.physics.add.group({
-                maxSize: 30,
-                runChildUpdate:true
-            });
-
-            // might have to change 30 to 29
-            for (let y = 0; y < 30; y++) {
-                asteroids.create(Phaser.Math.Between(0, 1300), Phaser.Math.Between(0, 350), 'asteroid');
-            }
-
-            bullets = this.physics.add.group({
-                maxSize: 30,
-                runChildUpdate:true
-            });
-            
-            asteroids.getChildren().forEach(function(asteroid) {
-                this.physics.add.collider(boundary, asteroid, collisionHandler);
-                asteroid.setCollideWorldBounds(true);
-                asteroid.setBounce(1);
-                asteroid.setVelocityX(Phaser.Math.Between(-100, 100));
-                asteroid.setVelocityY(Phaser.Math.Between(-100, 100));
-            }, this);
-
-            planet1.setScale(4);
-            planet1.setBounce(1);
-            //planet1.setCircle(true);
-
-            planet2.setScale(4);
-            planet2.setBounce(1);
-            //planet2.setCircle(true);
-
-            planet1.setCollideWorldBounds(true);
-            planet2.setCollideWorldBounds(true);
-
-            //planet1.disableBody(true, true);
-            //planet2.disableBody(true, true);
-
-            explosions = this.physics.add.group({
-                max: 0
-            });
-
-            this.anims.create({
-                key: 'explode',
-                frames: this.anims.generateFrameNumbers('explode', {
-                    start: 0,
-                    end: 15
-                }),
-                frameRate: 24,
-                repeat: 0,
-                hideOnComplete: true
-            })
-
-            nextLevel();
+      function update() {
+        if (numOfPlanets == 0) {
+          numOfPlanets += 1;
+          this.time.delayedCall(1000, nextLevel, [], this);
         }
 
-        function update() {
-            if (gameOver) {
-                livesText.setText(
-                    "Lives left: " +
-                    lives +
-                    ". Thankyou for playing :) Your score is: " + points
-                );
-                this.scene.pause();
-                return;
-            }
-
-            starfield.tilePositionY -= 2;
-
-            if (cursors.left.isDown) {
-                player.setVelocityX(-180);
-            } else if (cursors.right.isDown) {
-                player.setVelocityX(180);
-            } else if (cursors.up.isDown) {
-                player.setVelocityY(-180);
-            } else if (cursors.down.isDown) {
-                player.setVelocityY(+180);
-            } else if (cursors.space.isDown) {
-                // fire the bullet
-                if (this.time.now > bulletTime) {
-                    bullet = bullets.getFirst(false,true,player.x,player.y+8,'bullet');
-                    bullet.setVelocityY(-500);
-                    bulletTime = this.time.now + 200;
-
-                }
-            } else {
-                player.setVelocityY(0);
-                player.setVelocityX(0);
-            }
-            this.physics.add.overlap(player, planet1, playerHitPlanet, null, this);
-            this.physics.add.overlap(player, planet2, playerHitPlanet, null, this);
-            this.physics.add.overlap(bullets, asteroids, bulletHitAsteroid, null, this);
+        if (gameOver) {
+          livesText.setText(
+            "Lives left: " +
+              lives +
+              ". Thankyou for playing :) Your score is: " +
+              points
+          );
+          this.scene.pause();
+          return;
         }
 
-        function bulletHitAsteroid (bullet, asteroid) {
-            explosion = new Explosion(this, asteroid.x, asteroid.y);
-            explosion.setScale(0.5);
-            explosion.explode();
-            bullet.destroy();
-            asteroid.destroy();
-            points = points + 5;
-            pointsText.setText("Points: " + points);
-            console.log(asteroids.countActive)
-            if (points==maxpoints){
-            gameOver=true;
-            }
+        starfield.tilePositionY -= 2;
+
+        if (cursors.left.isDown) {
+          player.setVelocityX(-180);
+        } else if (cursors.right.isDown) {
+          player.setVelocityX(180);
+        } else if (cursors.up.isDown) {
+          player.setVelocityY(-180);
+        } else if (cursors.down.isDown) {
+          player.setVelocityY(+180);
+        } else if (cursors.space.isDown) {
+          // fire the bullet
+          if (this.time.now > bulletTime) {
+            bullet = bullets.getFirst(
+              false,
+              true,
+              player.x,
+              player.y + 8,
+              "bullet"
+            );
+            bullet.setVelocityY(-500);
+            bulletTime = this.time.now + 200;
+          }
+        } else {
+          player.setVelocityY(0);
+          player.setVelocityX(0);
+        }
+        this.physics.add.overlap(player, planet1, playerHitPlanet, null, this);
+        this.physics.add.overlap(player, planet2, playerHitPlanet, null, this);
+        this.physics.add.overlap(player, planet3, playerHitPlanet, null, this);
+        this.physics.add.overlap(player, planet4, playerHitPlanet, null, this);
+        this.physics.add.overlap(player, planet5, playerHitPlanet, null, this);
+        this.physics.add.overlap(
+          bullets,
+          asteroids,
+          bulletHitAsteroid,
+          null,
+          this
+        );
+      }
+
+      function bulletHitAsteroid(bullet, asteroid) {
+        explosion = new Explosion(this, asteroid.x, asteroid.y);
+        explosion.setScale(0.5);
+        explosion.explode();
+        bullet.destroy();
+        asteroid.destroy();
+        points = points + 5;
+        pointsText.setText("Points: " + points);
+        console.log(asteroids.countActive);
+        if (points == maxpoints) {
+          gameOver = true;
+        }
+      }
+
+      function playerHitPlanet(ply, planet) {
+        explosion = new Explosion(this, player.x, player.y);
+        explosion.explode();
+        player.disableBody(false, true);
+        lives -= 1;
+        livesText.setText("Lives left: " + lives);
+        numOfPlanets += 1;
+
+        if (lives <= 0) {
+          gameOver = true;
         }
 
-        function playerHitPlanet(ply, planet) {
-            explosion = new Explosion(this, player.x, player.y);
-            explosion.explode();
-            player.disableBody(false, true);
-            lives -= 1;
-            livesText.setText("Lives left: " + lives);
-            numOfPlanets += 1;
+        this.time.delayedCall(1000, nextLevel, [], this);
+        this.time.delayedCall(1000, respawnPlayer, [], this);
+        //ply.enable = true;
 
-            if (lives <= 0) {
-                gameOver = true;
-            }
+        // we should make it such that the extra planets are created in the nextLevel() section and not in the loading section.
+        // only problem now is making main character disappear and come back.
+      }
 
-            this.time.delayedCall(1000, nextLevel, [], this);
-            this.time.delayedCall(1000, respawnPlayer, [], this);
-            //ply.enable = true;
+      function respawnPlayer() {
+        if (lives != 1) player.enableBody(true, 600, 500, true, true);
+        else player.enableBody(true, 1200, 800, true, true);
+      }
 
-            // we should make it such that the extra planets are created in the nextLevel() section and not in the loading section.
-            // only problem now is making main character disappear and come back.
+      function nextLevel() {
+        if (numOfPlanets == 1) {
+          planet1 = this.physics.add.sprite(30, 30, "planet1");
+          planet1.setScale(4);
+          planet1.setBounce(1);
+          planet1.setCollideWorldBounds(true);
+          planet1.x = 30;
+          planet1.y = 30;
+          var velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet1.setVelocityX(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -300,
+              velocityCoin > 0.5 ? 300 : -100
+            )
+          );
+          velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet1.setVelocityY(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -300,
+              velocityCoin > 0.5 ? 300 : -100
+            )
+          );
         }
-
-        function respawnPlayer() {
-            player.enableBody(true, 400, 500, true, true);
+        if (numOfPlanets == 2) {
+          planet2 = this.physics.add.sprite(700, 15, "planet2");
+          planet2.setScale(4);
+          planet2.setBounce(1);
+          planet2.setCollideWorldBounds(true);
+          planet2.x = 700;
+          planet2.y = 15;
+          var velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet2.setVelocityX(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -300,
+              velocityCoin > 0.5 ? 300 : -100
+            )
+          );
+          velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet2.setVelocityY(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -300,
+              velocityCoin > 0.5 ? 300 : -100
+            )
+          );
         }
-
-        function nextLevel() {
-            if (numOfPlanets >= 1) {
-                planet1.x = 30;
-                planet1.y = 30;
-                var velocityCoin = Phaser.Math.FloatBetween(0, 1);
-                planet1.setVelocityX(
-                    Phaser.Math.Between(
-                        velocityCoin > 0.5 ? 100 : -300,
-                        velocityCoin > 0.5 ? 300 : -100
-                    )
-                );
-                velocityCoin = Phaser.Math.FloatBetween(0, 1);
-                planet1.setVelocityY(
-                    Phaser.Math.Between(
-                        velocityCoin > 0.5 ? 100 : -300,
-                        velocityCoin > 0.5 ? 300 : -100
-                    )
-                );
-            }
-            if (numOfPlanets >= 2) {
-                planet2.x = 700;
-                planet2.y = 15;
-                var velocityCoin = Phaser.Math.FloatBetween(0, 1);
-                planet2.setVelocityX(
-                    Phaser.Math.Between(
-                        velocityCoin > 0.5 ? 100 : -300,
-                        velocityCoin > 0.5 ? 300 : -100
-                    )
-                );
-                velocityCoin = Phaser.Math.FloatBetween(0, 1);
-                planet2.setVelocityY(
-                    Phaser.Math.Between(
-                        velocityCoin > 0.5 ? 100 : -300,
-                        velocityCoin > 0.5 ? 300 : -100
-                    )
-                );
-            }
+        if (numOfPlanets == 3) {
+          planet3 = this.physics.add.sprite(1000, 15, "planet3");
+          planet3.setScale(0.4);
+          planet3.setBounce(1);
+          planet3.setCollideWorldBounds(true);
+          planet3.x = 1000;
+          planet3.y = 15;
+          var ve3ocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet3.setVelocityX(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -400,
+              velocityCoin > 0.5 ? 400 : -100
+            )
+          );
+          velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet3.setVelocityY(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -400,
+              velocityCoin > 0.5 ? 400 : -100
+            )
+          );
         }
-
-        class Explosion extends Phaser.Physics.Arcade.Sprite {
-            constructor(scene, x, y) {
-                super(scene, x, y);
-                scene.add.existing(this);
-            }
-            explode(){
-                this.play('explode');
-            }
+        if (numOfPlanets == 4) {
+          planet4 = this.physics.add.sprite(1300, 15, "planet4");
+          planet4.setScale(0.3);
+          planet4.setBounce(1);
+          planet4.setCollideWorldBounds(true);
+          planet4.x = 1300;
+          planet4.y = 15;
+          var velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet4.setVelocityX(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -400,
+              velocityCoin > 0.5 ? 400 : -100
+            )
+          );
+          velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet4.setVelocityY(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -400,
+              velocityCoin > 0.5 ? 400 : -100
+            )
+          );
         }
+        if (numOfPlanets == 5) {
+          planet5 = this.physics.add.sprite(350, 15, "planet5");
+          planet5.setScale(0.55);
+          planet5.setBounce(1);
+          planet5.setCollideWorldBounds(true);
+          planet5.x = 350;
+          planet5.y = 15;
+          var velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet5.setVelocityX(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 90 : -100,
+              velocityCoin > 0.5 ? 100 : -90
+            )
+          );
+          velocityCoin = Phaser.Math.FloatBetween(0, 1);
+          planet5.setVelocityY(
+            Phaser.Math.Between(
+              velocityCoin > 0.5 ? 100 : -100,
+              velocityCoin > 0.5 ? 100 : -100
+            )
+          );
+        }
+      }
+
+      class Explosion extends Phaser.Physics.Arcade.Sprite {
+        constructor(scene, x, y) {
+          super(scene, x, y);
+          scene.add.existing(this);
+        }
+        explode() {
+          this.play("explode");
+        }
+      }
     </script>
-</body>
-
+  </body>
 </html>
