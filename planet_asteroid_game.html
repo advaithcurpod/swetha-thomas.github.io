@@ -67,11 +67,11 @@
                 frameWidth: 32,
                 frameHeight: 48,
             });
-            this.load.image("planet1", "assets/planet_1.png", {
+            this.load.image("planet1", "assets/earth.png", {
                 frameWidth: 32,
                 frameHeight: 48,
             });
-            this.load.image("planet2", "assets/planet_2.png", {
+            this.load.image("planet2", "assets/jupiter.png", {
                 frameWidth: 32,
                 frameHeight: 48,
             });
@@ -136,11 +136,11 @@
                 asteroid.setVelocityY(Phaser.Math.Between(-100, 100));
             }, this);
 
-            planet1.setScale(4);
+            planet1.setScale(0.25);
             planet1.setBounce(1);
             //planet1.setCircle(true);
 
-            planet2.setScale(4);
+            planet2.setScale(0.5);
             planet2.setBounce(1);
             //planet2.setCircle(true);
 
