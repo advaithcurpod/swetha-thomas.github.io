@@ -140,9 +140,11 @@
             }
 
             bullets = this.physics.add.group({
-                maxSize: 500,
                 runChildUpdate: true,
             });
+
+
+            console.log(bullets.countActive);
 
             asteroids.getChildren().forEach(function(asteroid) {
                 asteroid.setCollideWorldBounds(true);
@@ -166,6 +168,15 @@
                 repeat: 0,
                 hideOnComplete: true,
             });
+
+            
+            this.physics.add.overlap(
+                bullets,
+                asteroids,
+                bulletHitAsteroid,
+                null,
+                this
+            );
         }
 
         function update() {
@@ -188,6 +199,7 @@
             }
 
             starfield.tilePositionY -= 2;
+
             if (cursors.space.isDown) {
                 if (this.time.now > bulletTime) {
                     bullet = bullets.getFirst(
@@ -201,7 +213,6 @@
                     bulletTime = this.time.now + 200;
                 }
             }
-
 
             if (cursors.left.isDown) {
                 player.setVelocityX(-180);
@@ -221,13 +232,6 @@
             this.physics.add.overlap(player, planet3, playerHitPlanet, null, this);
             this.physics.add.overlap(player, planet4, playerHitPlanet, null, this);
             this.physics.add.overlap(player, planet5, playerHitPlanet, null, this);
-            this.physics.add.overlap(
-                bullets,
-                asteroids,
-                bulletHitAsteroid,
-                null,
-                this
-            );
         }
 
         function bulletHitAsteroid(bullet, asteroid) {
@@ -238,7 +242,6 @@
             asteroid.destroy();
             points = points + 5;
             pointsText.setText("Points: " + points);
-            console.log(asteroids.countActive);
             if (points == maxpoints) {
                 gameOver = true;
             }
