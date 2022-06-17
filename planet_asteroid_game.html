@@ -176,15 +176,19 @@
         }
 
         if (gameOver) {
-          gameovertext1 = this.add.text(100, 190, "Game Over!" , {
+          gameovertext1 = this.add.text(90, 190, "Game Over!" , {
           fontSize: "200px",
-          fill: "#fff",
+          fill: "#ffa500",
         });
-        gameovertext2 = this.add.text(120, 460, "Final Score = " + points + "  Lives Left = " + lives, {
-          fontSize: "50px",
-          fill: "#fff",
-        });
+        setTimeout(() => {
           this.scene.pause();
+        }, 1000);
+        setTimeout(() => {
+          gameovertext2 = this.add.text(170, 400, "Final Score = " + points + "  Lives Left = " + lives, {
+          fontSize: "50px",
+          fill: "#31baff",
+        })
+        }, 1500);
           return;
         }
 
