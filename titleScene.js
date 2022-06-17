@@ -1,23 +1,35 @@
 class TitleScene extends Phaser.Scene {
 
-	constructor() {
-		super({key:'titleScene'});
-	}
+    constructor() {
+        super({ key: 'titleScene' });
+        this.starfield = null;
+        this.text = null;
+    }
 
-	preload() {
-		this.load.image("starfield", "assets/starfield.png");
-	}
+    preload() {
+        this.load.image("starfield", "assets/starfield.png");
+    }
 
-	create() {
-		var starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
-		var text = this.add.text(550,350, 'SPACE INVADERS!');
-        var text = this.add.text(550,390, '<Click To Play>');
+    create() {
+        this.starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
+        this.add.text(300, -300, 'SPACE INVADERS!', {
+            fill: '#0f0',
+            fontSize: '75px'
+        });
+        // this.text = this.add.text(550,350, 'SPACE INVADERS!', { fill: '#0f0' });
+        this.text = this.add.text(500, 200, '<Click To Play>', { fill: '#0f0', fontSize: '25px' });
+        this.text.setInteractive({ useHandCursor: true });
 
-        text.setInteractive({ useHandCursor: true });
-        text.on('pointerdown', () => this.clickButton());
-	}
-    clickButton() {
-        this.scene.switch('gameScene');
+        this.text.on('pointerdown', () => {
+            this.scene.stop();
+            this.scene.start('gameScene');
+        });
+        this.text.on('pointerover', () => { this.text.setColor('#ffff00') });
+        this.text.on('pointerout', () => { this.text.setColor('#0f0') });
+    }
+
+    update() {
+        this.starfield.tilePositionY -= 2;
     }
 
 }
