@@ -23,9 +23,9 @@ class EndScene extends Phaser.Scene {
 
     create() {
         this.starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
-        this.gameover = this.add.image(650, 100, "gameover");
+        this.gameover = this.add.image(650, 150, "gameover");
         this.gameover.setScale(0.8);
-        this.score = this.add.text(570, 200, 'Your Score:'+ this.points , {
+        this.score = this.add.text(570, 250, 'Your Score:'+ this.points , {
             fill: '#0f0',
             fontSize: '25px'
         });
@@ -37,7 +37,8 @@ class EndScene extends Phaser.Scene {
         this.restart.setInteractive({ useHandCursor: true });
         this.restart.on('pointerdown', () => {
             this.scene.stop();
-            this.scene.start('gameScene');
+            var gameScene = this.scene.get('gameScene');
+            gameScene.scene.restart();
         });
     
         // this.playAgain.on('pointerover', () => {this.text.setColor('#ffff00')});
@@ -50,7 +51,8 @@ class EndScene extends Phaser.Scene {
         this.goToHome.setInteractive({ useHandCursor: true });
         this.goToHome.on('pointerdown', () => {
             this.scene.stop();
-            this.scene.start('titleScene');
+            var titleScene = this.scene.get('titleScene');
+            titleScene.scene.restart();
         });
         // this.goToHome.on('pointerover', () => {this.text.setColor('#ffff00')});
         // this.goToHome.on('pointerout', () => {this.text.setColor('#0f0')});

@@ -98,6 +98,10 @@ class GameScene extends Phaser.Scene {
         });
 
         this.cursors = this.input.keyboard.createCursorKeys();
+        this.cursors.left.isDown=false;
+        this.cursors.right.isDown=false;
+        this.cursors.down.isDown=false;
+        this.cursors.up.isDown=false;
 
         this.asteroids = this.physics.add.group({
             maxSize: 30,
@@ -153,6 +157,7 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
+
         if (this.lives == 0) {
             this.end();
         }
@@ -369,7 +374,6 @@ class GameScene extends Phaser.Scene {
             ". Thankyou for playing :) Your score: " +
             this.points
         );
-
         this.scene.stop();
         this.scene.start('endScene', {points:this.points});
     }
