@@ -3,34 +3,50 @@ class EndScene extends Phaser.Scene {
     constructor() {
         super({ key: 'endScene' });
         this.starfield = null;
-        this.gameName = null;
-        this.playAgain = null;
+        this.gameover =null
+        this.score = 0;
+        this.restart = null;
         this.goToHome = null;
+    }
+
+    init(data){
+        this.points=data.points;
     }
 
     preload() {
         this.load.image("starfield", "assets/starfield.png");
+        this.load.image("gameover", "assets/gameover.png");
+        this.load.image("restart", "assets/replay.png");
+        this.load.image("menu", "assets/menu.png");
+
     }
 
     create() {
         this.starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
-        this.gameName = this.add.text(300, -300, 'SPACE INVADERS!', {
+        this.gameover = this.add.image(650, 100, "gameover");
+        this.gameover.setScale(0.8);
+        this.score = this.add.text(570, 200, 'Your Score:'+ this.points , {
             fill: '#0f0',
-            fontSize: '75px'
+            fontSize: '25px'
         });
 
         // changes the scene to gameScene
-        this.playAgain = this.add.text(500, 200, 'PLAY AGAIN!', { fill: '#0f0', fontSize: '25px' });
-        this.playAgain.setInteractive({ useHandCursor: true });
-        this.playAgain.on('pointerdown', () => {
+        this.restart = this.add.image(500,400, 'restart');
+        this.restart.setScale(0.5);
+
+        this.restart.setInteractive({ useHandCursor: true });
+        this.restart.on('pointerdown', () => {
             this.scene.stop();
             this.scene.start('gameScene');
         });
+    
         // this.playAgain.on('pointerover', () => {this.text.setColor('#ffff00')});
         // this.playAgain.on('pointerout', () => {this.text.setColor('#0f0')});
 
         // changes the scene to titleScene
-        this.goToHome = this.add.text(500, 350, 'GO TO HOME', { fill: '#0f0', fontSize: '25px' });
+        this.goToHome = this.add.image(800,400, 'menu');
+        this.goToHome.setScale(0.52);
+
         this.goToHome.setInteractive({ useHandCursor: true });
         this.goToHome.on('pointerdown', () => {
             this.scene.stop();

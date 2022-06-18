@@ -1,10 +1,10 @@
 import Explosion from "./explosion.js";
-import EndScene from "./endScene.js";
 
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'gameScene' })
     }
+
     init() {
         this.starfield = null;
         this.player = null;
@@ -26,8 +26,8 @@ class GameScene extends Phaser.Scene {
         this.numOfPlanets = 0;
         // this.gameOver = false;
         this.bulletTime = 0;
-        this.bulletFiring = null;
-        this.explsoionSound = null;
+        //this.bulletFiring = null;
+        //this.explsoionSound = null;
     }
 
     preload() {
@@ -69,8 +69,8 @@ class GameScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 48,
         });
-        this.load.audio("bulletFiring", "assets/shoot.wav");
-        this.load.audio("explosionSound", "assets/explosion.wav");
+        //this.load.audio("bulletFiring", "assets/shoot.wav");
+        //this.load.audio("explosionSound", "assets/explosion.wav");
     }
 
     create() {
@@ -148,14 +148,15 @@ class GameScene extends Phaser.Scene {
             this
         );
 
-        this.bulletFiring = this.sound.add("bulletFiring");
-        this.explosionSound = this.sound.add("explsoionSound");
+        //this.bulletFiring = this.sound.add("bulletFiring");
+        //this.explosionSound = this.sound.add("explsoionSound");
     }
 
     update() {
         if (this.lives == 0) {
             this.end();
         }
+
         if (this.numOfPlanets == 0) {
             this.numOfPlanets += 1;
             this.time.delayedCall(1000, this.nextLevel, [], this);
@@ -177,7 +178,7 @@ class GameScene extends Phaser.Scene {
 
         if (this.cursors.space.isDown) {
             if (this.time.now > this.bulletTime) {
-                this.bulletFiring.play();
+                //this.bulletFiring.play();
                 var bullet = this.bullets.getFirst(
                     false,
                     true,
@@ -211,7 +212,7 @@ class GameScene extends Phaser.Scene {
     }
 
     bulletHitAsteroid(bullet, asteroid) {
-        this.explosionSound.play();
+        //this.explosionSound.play();
         var explosion = new Explosion(this, asteroid.x, asteroid.y);
         explosion.setScale(0.5);
         explosion.explode();
@@ -227,7 +228,7 @@ class GameScene extends Phaser.Scene {
     }
 
     playerHitPlanet(ply, planet) {
-        this.explosionSound.play();
+        //this.explosionSound.play();
         var explosion = new Explosion(this, this.player.x, this.player.y);
         explosion.explode();
         this.player.disableBody(false, true);
@@ -370,7 +371,7 @@ class GameScene extends Phaser.Scene {
         );
 
         this.scene.stop();
-        this.scene.start('endScene');
+        this.scene.start('endScene', {points:this.points});
     }
 
 }
