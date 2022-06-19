@@ -24,10 +24,9 @@ class GameScene extends Phaser.Scene {
         this.pointsText = null;
         this.livesText = null;
         this.numOfPlanets = 0;
-        // this.gameOver = false;
         this.bulletTime = 0;
-        //this.bulletFiring = null;
-        //this.explsoionSound = null;
+        this.bulletFiring = null;
+        this.explosionSound = null;
     }
 
     preload() {
@@ -69,8 +68,8 @@ class GameScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 48,
         });
-        //this.load.audio("bulletFiring", "assets/shoot.wav");
-        //this.load.audio("explosionSound", "assets/explosion.wav");
+        this.load.audio("bulletFiring", "assets/shoot.wav");
+        this.load.audio("explosionSound", "assets/explosion.wav");
     }
 
     create() {
@@ -79,6 +78,7 @@ class GameScene extends Phaser.Scene {
             .sprite(0, 450, "boundary")
             .setScale(2.23)
             .setImmovable(true);
+
         this.player = this.physics.add.sprite(400, 500, "player");
         this.player.setScale(1.2);
         this.player.setCollideWorldBounds(true);
@@ -98,10 +98,6 @@ class GameScene extends Phaser.Scene {
         });
 
         this.cursors = this.input.keyboard.createCursorKeys();
-        this.cursors.left.isDown=false;
-        this.cursors.right.isDown=false;
-        this.cursors.down.isDown=false;
-        this.cursors.up.isDown=false;
 
         this.asteroids = this.physics.add.group({
             maxSize: 30,
@@ -136,13 +132,12 @@ class GameScene extends Phaser.Scene {
             key: "explode",
             frames: this.anims.generateFrameNumbers("explode", {
                 start: 0,
-                end: 15,
+                game_over: 15,
             }),
             frameRate: 24,
             repeat: 0,
             hideOnComplete: true,
         });
-
 
         this.physics.add.overlap(
             this.bullets,
@@ -152,14 +147,19 @@ class GameScene extends Phaser.Scene {
             this
         );
 
-        //this.bulletFiring = this.sound.add("bulletFiring");
-        //this.explosionSound = this.sound.add("explsoionSound");
+        this.bulletFiring = this.sound.add("bulletFiring");
+        this.explosionSound = this.sound.add("explosionSound");
     }
 
     update() {
 
         if (this.lives == 0) {
-            this.end();
+            this.cursors.left.isDown=false;
+            this.cursors.right.isDown=false;
+            this.cursors.down.isDown=false;
+            this.cursors.up.isDown=false;
+            this.cursors.space.isDown=false;
+            this.game_over();
         }
 
         if (this.numOfPlanets == 0) {
@@ -167,23 +167,11 @@ class GameScene extends Phaser.Scene {
             this.time.delayedCall(1000, this.nextLevel, [], this);
         }
 
-        // if (this.gameOver) {
-        //     this.livesText.setText(
-        //         "Lives left: " +
-        //         this.lives +
-        //         ". Thankyou for playing :) Your score: " +
-        //         this.points
-        //     );
-        //     this.scene.pause();
-        //     this.endPage();
-        //     return;
-        // }
-
         this.starfield.tilePositionY -= 2;
 
         if (this.cursors.space.isDown) {
             if (this.time.now > this.bulletTime) {
-                //this.bulletFiring.play();
+                this.bulletFiring.play();
                 var bullet = this.bullets.getFirst(
                     false,
                     true,
@@ -217,23 +205,26 @@ class GameScene extends Phaser.Scene {
     }
 
     bulletHitAsteroid(bullet, asteroid) {
-        //this.explosionSound.play();
+        this.explosionSound.play();
         var explosion = new Explosion(this, asteroid.x, asteroid.y);
         explosion.setScale(0.5);
         explosion.explode();
         bullet.destroy();
         asteroid.destroy();
-
         this.points = this.points + 5;
         this.pointsText.setText("Points: " + this.points);
         if (this.points == this.maxpoints) {
-            // this.gameOver = true;
-            this.end();
+            this.cursors.left.isDown=false;
+            this.cursors.right.isDown=false;
+            this.cursors.down.isDown=false;
+            this.cursors.up.isDown=false;
+            this.cursors.space.isDown=false;
+            this.game_over();
         }
     }
 
     playerHitPlanet(ply, planet) {
-        //this.explosionSound.play();
+        this.explosionSound.play();
         var explosion = new Explosion(this, this.player.x, this.player.y);
         explosion.explode();
         this.player.disableBody(false, true);
@@ -306,7 +297,7 @@ class GameScene extends Phaser.Scene {
             this.planet3.setCollideWorldBounds(true);
             this.planet3.x = 1000;
             this.planet3.y = 15;
-            var ve3ocityCoin = Phaser.Math.FloatBetween(0, 1);
+            var velocityCoin = Phaser.Math.FloatBetween(0, 1);
             this.planet3.setVelocityX(
                 Phaser.Math.Between(
                     velocityCoin > 0.5 ? 100 : -400,
@@ -367,7 +358,13 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    end() {
+    game_over() {
+
+        this.cursors.left.isDown=false;
+        this.cursors.right.isDown=false;
+        this.cursors.down.isDown=false;
+        this.cursors.up.isDown=false;
+        this.cursors.space.isDown=false;
         this.livesText.setText(
             "Lives left: " +
             this.lives +
@@ -377,7 +374,6 @@ class GameScene extends Phaser.Scene {
         this.scene.stop();
         this.scene.start('endScene', {points:this.points});
     }
-
 }
 
 export default GameScene;

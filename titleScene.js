@@ -28,10 +28,9 @@ class TitleScene extends Phaser.Scene {
         this.scene.switch('gameScene');
     }
 
-
     update() {
         this.starfield.tilePositionY -= 2;
     }
-
 }
+
 export default TitleScene;

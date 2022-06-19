@@ -9,7 +9,7 @@ class EndScene extends Phaser.Scene {
         this.goToHome = null;
     }
 
-    init(data){
+    init(data) {
         this.points=data.points;
     }
 
@@ -18,7 +18,6 @@ class EndScene extends Phaser.Scene {
         this.load.image("gameover", "assets/gameover.png");
         this.load.image("restart", "assets/replay.png");
         this.load.image("menu", "assets/menu.png");
-
     }
 
     create() {
@@ -33,34 +32,26 @@ class EndScene extends Phaser.Scene {
         // changes the scene to gameScene
         this.restart = this.add.image(500,400, 'restart');
         this.restart.setScale(0.5);
-
         this.restart.setInteractive({ useHandCursor: true });
         this.restart.on('pointerdown', () => {
             this.scene.stop();
             var gameScene = this.scene.get('gameScene');
-            gameScene.scene.restart();
+            gameScene.scene.start();
         });
     
-        // this.playAgain.on('pointerover', () => {this.text.setColor('#ffff00')});
-        // this.playAgain.on('pointerout', () => {this.text.setColor('#0f0')});
-
         // changes the scene to titleScene
         this.goToHome = this.add.image(800,400, 'menu');
         this.goToHome.setScale(0.52);
-
         this.goToHome.setInteractive({ useHandCursor: true });
         this.goToHome.on('pointerdown', () => {
             this.scene.stop();
             var titleScene = this.scene.get('titleScene');
-            titleScene.scene.restart();
+            titleScene.scene.start();
         });
-        // this.goToHome.on('pointerover', () => {this.text.setColor('#ffff00')});
-        // this.goToHome.on('pointerout', () => {this.text.setColor('#0f0')});
     }
 
     update() {
         this.starfield.tilePositionY -= 2;
     }
-
 }
 export default EndScene;

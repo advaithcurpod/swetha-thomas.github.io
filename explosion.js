@@ -3,8 +3,10 @@ class Explosion extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y);
         scene.add.existing(this);
     }
+
     explode() {
         this.play("explode");
     }
 }
+
 export default Explosion;
