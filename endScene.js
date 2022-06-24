@@ -4,6 +4,7 @@ class EndScene extends Phaser.Scene {
         super({ key: 'endScene' });
         this.starfield = null;
         this.gameover =null
+        this.win=null;
         this.score = 0;
         this.restart = null;
         this.goToHome = null;
@@ -16,14 +17,21 @@ class EndScene extends Phaser.Scene {
     preload() {
         this.load.image("starfield", "assets/starfield.png");
         this.load.image("gameover", "assets/gameover.png");
+        this.load.image("win", "assets/win.png");
         this.load.image("restart", "assets/replay.png");
         this.load.image("menu", "assets/menu.png");
     }
 
     create() {
         this.starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
-        this.gameover = this.add.image(650, 150, "gameover");
-        this.gameover.setScale(0.8);
+        if (this.points==150){
+            this.win = this.add.image(650, 150, "win");
+            this.win.setScale(0.5);
+        }
+        else {
+            this.gameover = this.add.image(650, 150, "gameover");
+            this.gameover.setScale(0.8);
+        }
         this.score = this.add.text(570, 250, 'Your Score:'+ this.points , {
             fill: '#0f0',
             fontSize: '25px'
