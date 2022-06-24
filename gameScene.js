@@ -24,9 +24,11 @@ class GameScene extends Phaser.Scene {
         this.pointsText = null;
         this.livesText = null;
         this.numOfPlanets = 0;
+        this.numOfBullets = 6;
         this.bulletTime = 0;
         this.bulletFiring = null;
         this.explosionSound = null;
+        this.SpawnMusic = null;
     }
 
     preload() {
@@ -70,6 +72,7 @@ class GameScene extends Phaser.Scene {
         });
         this.load.audio("bulletFiring", "assets/shoot.wav");
         this.load.audio("explosionSound", "assets/explosion.wav");
+        this.load.audio("SpawnMusic", "assets/Spawn.mp3");
     }
 
     create() {
@@ -149,6 +152,7 @@ class GameScene extends Phaser.Scene {
 
         this.bulletFiring = this.sound.add("bulletFiring");
         this.explosionSound = this.sound.add("explosionSound");
+        this.SpawnMusic = this.sound.add("SpawnMusic", { loop: false });
     }
 
     update() {
@@ -162,6 +166,10 @@ class GameScene extends Phaser.Scene {
             this.game_over();
         }
 
+        if (this.lives == 1) {
+            this.livesText.setColor('#EF0107');
+        }
+
         if (this.numOfPlanets == 0) {
             this.numOfPlanets += 1;
             this.time.delayedCall(1000, this.nextLevel, [], this);
@@ -170,8 +178,9 @@ class GameScene extends Phaser.Scene {
         this.starfield.tilePositionY -= 2;
 
         if (this.cursors.space.isDown) {
-            if (this.time.now > this.bulletTime) {
+            if ((this.time.now > this.bulletTime) && (this.numOfBullets > 0)) {
                 this.bulletFiring.play();
+                this.numOfBullets -= 1;
                 var bullet = this.bullets.getFirst(
                     false,
                     true,
@@ -180,8 +189,12 @@ class GameScene extends Phaser.Scene {
                     "bullet"
                 );
                 bullet.setVelocityY(-500);
-                this.bulletTime = this.time.now + 200;
+                this.bulletTime = this.time.now + 300;
             }
+        }
+
+        if (this.numOfBullets == 0) {
+            this.time.delayedCall(4000, this.reload, [], this);
         }
 
         if (this.cursors.left.isDown) {
@@ -204,6 +217,10 @@ class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.planet5, this.playerHitPlanet, null, this);
     }
 
+    reload() {
+        this.numOfBullets = 6;
+    }
+    
     bulletHitAsteroid(bullet, asteroid) {
         this.explosionSound.play();
         var explosion = new Explosion(this, asteroid.x, asteroid.y);
@@ -241,6 +258,7 @@ class GameScene extends Phaser.Scene {
     }
 
     respawnPlayer() {
+        this.SpawnMusic.play();
         if (this.lives != 1) this.player.enableBody(true, 600, 500, true, true);
         else this.player.enableBody(true, 1200, 800, true, true);
     }
@@ -359,20 +377,21 @@ class GameScene extends Phaser.Scene {
     }
 
     game_over() {
-
         this.cursors.left.isDown=false;
         this.cursors.right.isDown=false;
         this.cursors.down.isDown=false;
         this.cursors.up.isDown=false;
         this.cursors.space.isDown=false;
-        this.livesText.setText(
+        /*this.livesText.setText(
             "Lives left: " +
             this.lives +
             ". Thankyou for playing :) Your score: " +
             this.points
-        );
+        );*/
         this.scene.stop();
-        this.scene.start('endScene', {points:this.points});
+        setTimeout(() => {
+            this.scene.start('endScene', {points:this.points});
+          }, 2000);
     }
 }
 
