@@ -76,7 +76,7 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.starfield = this.add.tileSprite(0, 0, 4000, 1400, "starfield");
+        this.starfield = this.add.tileSprite(0, 0, 3000, 3000, "starfield");
         this.boundary = this.physics.add
             .sprite(0, 450, "boundary")
             .setScale(2.23)
